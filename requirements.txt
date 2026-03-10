@@ -1,5 +1,7 @@
-autogen-agentchat
-autogen-ext[openai]
-python-dotenv
-requests
-pytest
+# Core runtime deps
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# AutoGen AgentChat + model clients
+autogen-agentchat>=0.4.0
+autogen-ext[openai,azure]>=0.4.0
