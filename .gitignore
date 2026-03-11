@@ -1,14 +1,31 @@
-# Secrets
-.env
-
-# Python
+# ---- Python ----
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ---- Virtual environments ----
 .venv/
+venv/
+ENV/
+env/
 
-# OS
+# ---- Environment variables / secrets ----
+.env
+.env.*
+!.env.example
+
+# ---- IDEs ----
+.vscode/
+.idea/
+
+# ---- OS ----
 .DS_Store
+Thumbs.db
 
-# Tooling
-.pytest_cache/
-.ruff_cache/
+# ---- Logs ----
+*.log

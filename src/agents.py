@@ -59,11 +59,7 @@ def build_team(model_client: AzureOpenAIChatCompletionClient, input_func=input):
         ),
     )
 
-    user_proxy = UserProxyAgent(
-        name="user",
-        description="Human user proxy.",
-        input_func=input_func,
-    )
+    
 
     # Stop when answerer outputs FINAL, or after N messages to avoid loops
     termination = TextMentionTermination("FINAL") | MaxMessageTermination(
@@ -71,7 +67,7 @@ def build_team(model_client: AzureOpenAIChatCompletionClient, input_func=input):
     )
 
     team = RoundRobinGroupChat(
-        participants=[user_proxy, planner, retriever, answerer],
+        participants=[ planner, retriever, answerer],
         termination_condition=termination,
     )
     return team

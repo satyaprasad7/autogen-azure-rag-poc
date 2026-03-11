@@ -99,9 +99,7 @@ def format_results(results: List[Dict[str, Any]], max_chars: int = 1200) -> str:
         source = doc.get(cfg.source_field, "") or doc.get("url", "") or doc.get("id", "")
         source = str(source).strip() or "azure-ai-search"
 
-        blocks.append(f"[{i}] source={source}
-{content}")
-
-    return "
-
-".join(blocks)
+        blocks.append(f"[{i}] source={source}{content}") 
+        return "\n\n".join(blocks)
+    
+        
