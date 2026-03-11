@@ -1,146 +1,126 @@
-# AutoGen + Azure OpenAI + Azure AI Search — RAG POC (GitHub Desktop friendly)
+# AutoGen + Azure AI Search – Agentic RAG POC
 
-This repo is a **POC** for a **multi-agent RAG** assistant using:
+This repository demonstrates an **Agentic Retrieval‑Augmented Generation (RAG)** pattern using **Microsoft AutoGen** and **Azure AI Search**.
 
-- **Microsoft AutoGen AgentChat** (multi-agent orchestration) — `AssistantAgent`, `UserProxyAgent`, and team workflows like `RoundRobinGroupChat`. citeturn7search118turn4search76
-- **Azure OpenAI** for chat completions via `AzureOpenAIChatCompletionClient`. citeturn7search128turn7search129
-- **Azure AI Search** as the retrieval layer for RAG (query → top-k chunks). citeturn4search70
+The system uses multiple AI agents to:
+- decide whether retrieval is required,
+- retrieve relevant enterprise content from Azure AI Search,
+- and generate grounded answers **only from retrieved context**.
 
-> Your original assignment requirement is a RAG system (load → chunk → embed → vector store → retrieve → answer) with an optional conversational experience. citeturn1search1
-
----
-
-## 1) Create/Manage with GitHub Desktop
-
-1. **File → Add local repository…** (or **File → New repository…** if starting fresh)
-2. Create the folder structure shown below (or unzip the provided template) into the repo directory.
-3. In GitHub Desktop:
-   - You will see file changes in the left pane.
-   - Add a commit message like: `Initial AutoGen Azure RAG POC scaffold`
-   - Click **Commit to main**
-   - Click **Push origin**
+This is a **strict RAG** implementation — no hallucinations by design.
 
 ---
 
-## 2) Project structure
+## 🧠 Architecture Overview
+User Question
+↓
+Planner Agent
+↓
+Retriever Agent ────► Azure AI Search
+↓
+Answerer Agent
+↓
+FINAL
 
-```text
-src/
-  config.py        # Azure OpenAI model client creation
-  azure_search.py  # Azure AI Search REST calls
-  tools.py         # Tool wrapper that returns formatted context
-  agents.py        # AutoGen agents + team wiring
-  run_chat.py      # CLI entrypoint
-
-tests/
-  test_01_config.py
-  test_02_search_format.py
-
-.env.example
-requirements.txt
-requirements-dev.txt
-.gitignore
-README.md
-```
+### Agents
+- **Planner**  
+  Decides whether retrieval from the knowledge base is required.
+- **Retriever**  
+  Calls Azure AI Search using a registered tool (`search_knowledge_base`).
+- **Answerer**  
+  Produces an answer **only from retrieved context**, with citations.
 
 ---
 
-## 3) Setup
+## 🚀 Tech Stack
 
-### 3.1 Create a virtual environment
+- **Python 3.9+**
+- **Microsoft AutoGen (AgentChat)**
+- **Azure OpenAI**
+- **Azure AI Search**
+- **azure-search-documents SDK**
+- **python-dotenv**
 
+---
+
+## 📁 Repository Structure
+
+
+autogen-azure-rag-poc/
+├─ src/
+│  ├─ agents.py        # Planner / Retriever / Answerer agents
+│  ├─ tools.py         # Azure AI Search retrieval tool
+│  ├─ config.py        # Environment loading + model client
+│  └─ run_chat.py      # Entry point
+├─ .gitignore
+├─ .env.example        # Environment variable template
+├─ requirements.txt
+└─ README.md
+
+---
+
+## ⚙️ Setup Instructions
+
+### 1️⃣ Create and activate a virtual environment
 ```bash
 python -m venv .venv
-# Windows: .venv\Scripts\activate
-# Linux/Mac:
-source .venv/bin/activate
-```
+source .venv/bin/activate    # Linux / macOS
+.venv\Scripts\activate       # Windows
 
-### 3.2 Install dependencies
+2️⃣ Install dependencies
+Shellpip install -r requirements.txtShow more lines
+3️⃣ Configure environment variables
+Shellcp .env.example .envShow more lines
+Fill in values for:
 
-```bash
-pip install -U pip
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-```
+Azure OpenAI
+Azure AI Search
 
-AutoGen install guidance shows installing `autogen-agentchat` and `autogen-ext[openai]` for model clients. citeturn4search76turn7search118
+⚠️ Do NOT commit .env — it is intentionally ignored.
 
----
+▶️ Run the application
+Shellpython -m src.run_chat --question "What is Azure AI Search?"Show more lines
+Expected behavior
 
-## 4) Configuration
+Planner decides retrieval is required
+Retriever queries Azure AI Search
+Answerer responds using retrieved content
+Output ends with FINAL
 
-Copy the example env file and fill values:
 
-```bash
-cp .env.example .env
-```
+✅ Design Principles
 
-### Required env vars
+✅ Grounded answers only (no hallucination)
+✅ Deterministic agent routing
+✅ Tool‑based retrieval
+✅ Clean termination conditions
+✅ Secrets excluded from source control
 
-**Azure OpenAI (chat model)**
-- `AZURE_OPENAI_ENDPOINT`
-- `AZURE_OPENAI_API_KEY`
-- `AZURE_OPENAI_API_VERSION`
-- `AZURE_OPENAI_DEPLOYMENT` (your deployment name)
-- `AZURE_OPENAI_MODEL` (model name for capabilities, e.g., gpt-4o / gpt-4o-mini)
 
-**Azure AI Search**
-- `AZURE_SEARCH_ENDPOINT`
-- `AZURE_SEARCH_KEY`
-- `AZURE_SEARCH_INDEX`
+🔮 Possible Enhancements
 
----
+Semantic ranking
+Vector / hybrid search
+Fallback mode when no context is found
+Evaluation & tracing hooks
+CI pipeline (lint + smoke test)
 
-## 5) Run the POC
 
-### 5.1 Quick run (single question)
-
-```bash
-python -m src.run_chat --question "What is this page about?"
-```
-
-This uses a small multi-agent team:
-- Planner Agent (decides if retrieval is needed)
-- Retriever Agent (calls Azure AI Search tool)
-- Answer Agent (answers only from retrieved context and ends with `FINAL`)
-
-The POC uses AutoGen AgentChat primitives shown in the official docs examples (`AssistantAgent`, `UserProxyAgent`, `RoundRobinGroupChat`, and `Console`). citeturn7search118turn7search130
+ (recommended for POCs and demos)
 
 ---
 
-## 6) Test each section individually
+# ✅ 2️⃣ `requirements.txt` (minimal & correct)
 
-### 6.1 Unit tests (no cloud calls)
+```txt
+autogen-agentchat
+autogen-ext[openai]
+azure-search-documents
+python-dotenv
 
-```bash
-pytest -q
-```
+✅ This is enough to:
 
-The included tests validate:
-- env/config parsing
-- Azure AI Search result formatting
-
-### 6.2 Integration tests (optional)
-
-To validate against real Azure services, run the app and verify:
-1) `src.azure_search.search_topk()` returns results
-2) The retriever agent returns a `CONTEXT` block
-3) The answer agent responds with citations like `[1]` and ends with `FINAL`
-
----
-
-## 7) Notes / Next improvements
-
-- Add ingestion (webpage → chunking → embeddings → index) to fully automate RAG indexing.
-- Add `SelectorGroupChat` to dynamically pick which agent speaks next. citeturn7search130
-- Add Azure hosting (Functions/App Service) + App Insights for production monitoring.
-
----
-
-## References
-
-- Assignment definition of RAG pipeline and conversational requirement. citeturn1search1
-- AutoGen framework install + AgentChat usage. citeturn4search76turn7search118
-- AutoGen model clients and Azure OpenAI usage. citeturn7search128turn7search129
-- Azure AI Search RAG overview. citeturn4search70
+run AutoGen agents
+connect to Azure OpenAI
+query Azure AI Search
+load .env safely
